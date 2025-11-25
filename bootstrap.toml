@@ -1,10 +1,10 @@
-change-id = 147888
+change-id = 148795
 [llvm]
 download-ci-llvm = false
 use-libcxx = true
 static-libstdcpp = true
-targets = "AArch64;AMDGPU;ARM;BPF;Hexagon;LoongArch;MSP430;Mips;NVPTX;PowerPC;RISCV;Sparc;SystemZ;WebAssembly;X86"
-experimental-targets = "Xtensa;AVR;M68k;CSKY"
+targets = "AArch64;ARM;RISCV;SPIRV;WebAssembly;X86"
+experimental-targets = ""
 cflags = "-std=gnu23 -fPIC"
 cxxflags = "-std=c++17 -fPIC -nostdinc++ -nostdlib++ -isystem /home/mccakit/dev/libcxx/native/include/c++/v1"
 ldflags = "-fuse-ld=lld -nostdlib++ -rtlib=compiler-rt /home/mccakit/dev/libcxx/native/lib/libunwind.a /home/mccakit/dev/libcxx/native/lib/libc++abi.a /home/mccakit/dev/libcxx/native/lib/libc++.a"
@@ -12,16 +12,16 @@ ldflags = "-fuse-ld=lld -nostdlib++ -rtlib=compiler-rt /home/mccakit/dev/libcxx/
 download-ci-gcc = false
 [build]
 optimized-compiler-builtins = true
-cargo = "/home/mccakit/dev/rustc/bin/cargo"
-rustc = "/home/mccakit/dev/rustc/bin/rustc"
+cargo = "/home/mccakit/dev/rust/bin/cargo"
+rustc = "/home/mccakit/dev/rust/bin/rustc"
 local-rebuild = true
 build-stage = 2
 test-stage = 2
 doc-stage = 2
 extended = true
 [install]
-prefix = "/home/mccakit/dev/rust"
-sysconfdir = "/home/mccakit/dev/rust/etc"
+prefix = "/home/mccakit/dev/rustc"
+sysconfdir = "/home/mccakit/dev/rustc/etc"
 [rust]
 codegen-tests = false
 incremental = true
@@ -62,6 +62,65 @@ rustflags = [
     "-C", "link-arg=/home/mccakit/dev/libcxx/debian-arm64/lib/libc++.a",
     "-C", "link-arg=/home/mccakit/dev/libcxx/debian-arm64/lib/libc++abi.a",
     "-C", "link-arg=/home/mccakit/dev/libcxx/debian-arm64/lib/libunwind.a",
+]
+[target.x86_64-unknown-linux-musl]
+llvm-libunwind = "in-tree"
+llvm-config = "/home/mccakit/dev/llvm/bin/llvm-config"
+cc = "clang"
+cxx = "clang++"
+ar = "llvm-ar"
+ranlib = "llvm-ranlib"
+linker = "clang"
+musl-root = "/home/mccakit/dev/musl/x64"
+rustflags = [
+    "-C", "linker=clang",
+    "-C", "link-arg=-static",
+    "-C", "link-arg=-fuse-ld=lld",
+    "-C", "link-arg=--target=x86_64-unknown-linux-musl",
+    "-C", "link-arg=/home/mccakit/dev/musl/x64/lib/crt1.o",
+    "-C", "link-arg=/home/mccakit/dev/musl/x64/lib/crti.o",
+    "-C", "link-arg=-nostdlib",
+    "-C", "link-arg=-L/home/mccakit/dev/musl/x64/lib",
+    "-C", "link-arg=-lc",
+    "-C", "link-arg=-rtlib=compiler-rt",
+    "-C", "link-arg=-L/home/mccakit/dev/compiler-rt/x86_64-unknown-linux-musl/lib/linux",
+    "-C", "link-arg=-lclang_rt.builtins-x86_64",
+    "-C", "link-arg=-nostdlib++",
+    "-C", "link-arg=-L/home/mccakit/dev/libcxx/x86_64-unknown-linux-musl/lib",
+    "-C", "link-arg=-lunwind",
+    "-C", "link-arg=-lc++abi",
+    "-C", "link-arg=-lc++",
+    "-C", "link-arg=/home/mccakit/dev/musl/x64/lib/crtn.o"
+]
+[target.aarch64-unknown-linux-musl]
+llvm-libunwind = "in-tree"
+llvm-config = "/home/mccakit/dev/llvm/bin/llvm-config"
+cc = "clang"
+cxx = "clang++"
+ar = "llvm-ar"
+ranlib = "llvm-ranlib"
+linker = "clang"
+musl-root = "/home/mccakit/dev/musl/arm64"
+rustflags = [
+    "-C", "linker=clang",
+    "-C", "link-arg=-static",
+    "-C", "link-arg=-fuse-ld=lld",
+    "-C", "link-arg=--target=aarch64-unknown-linux-musl",
+    "-C", "link-arg=--sysroot=/home/mccakit/dev/sysroots/debian-arm64",
+    "-C", "link-arg=/home/mccakit/dev/musl/arm64/lib/crt1.o",
+    "-C", "link-arg=/home/mccakit/dev/musl/arm64/lib/crti.o",
+    "-C", "link-arg=-nostdlib",
+    "-C", "link-arg=-L/home/mccakit/dev/musl/arm64/lib",
+    "-C", "link-arg=-lc",
+    "-C", "link-arg=-rtlib=compiler-rt",
+    "-C", "link-arg=-L/home/mccakit/dev/compiler-rt/aarch64-unknown-linux-musl/lib/linux",
+    "-C", "link-arg=-lclang_rt.builtins-aarch64",
+    "-C", "link-arg=-nostdlib++",
+    "-C", "link-arg=-L/home/mccakit/dev/libcxx/aarch64-unknown-linux-musl/lib",
+    "-C", "link-arg=-lunwind",
+    "-C", "link-arg=-lc++abi",
+    "-C", "link-arg=-lc++",
+    "-C", "link-arg=/home/mccakit/dev/musl/arm64/lib/crtn.o"
 ]
 [target.x86_64-pc-windows-gnullvm]
 llvm-libunwind = 'in-tree'
@@ -191,4 +250,17 @@ rustflags = [
     "-C", "link-arg=/home/mccakit/dev/libcxx/android-arm64/lib/libc++abi.a",
     "-C", "link-arg=/home/mccakit/dev/libcxx/android-arm64/lib/libc++_static.a",
     "-C", "link-arg=-L/home/mccakit/dev/android-clt/ndk/29.0.13599879/toolchains/llvm/prebuilt/linux-x86_64/lib/clang/20/lib/linux/aarch64",
+]
+[target.wasm32-unknown-emscripten]
+llvm-config = "/home/mccakit/dev/llvm/bin/llvm-config"
+cc = "/home/mccakit/dev/emscripten/emcc"
+cxx = "/home/mccakit/dev/emscripten/em++"
+ar = "/home/mccakit/dev/emscripten/emar"
+ranlib = "/home/mccakit/dev/emscripten/emranlib"
+linker = "/home/mccakit/dev/emscripten/emcc"
+rustflags = [
+    "-C", "linker=/home/mccakit/dev/emscripten/emcc",
+    "-C", "link-arg=-sUSE_PTHREADS=1",
+    "-C", "link-arg=-sALLOW_MEMORY_GROWTH",
+    "-C", "link-arg=-sINITIAL_MEMORY=256MB"
 ]
